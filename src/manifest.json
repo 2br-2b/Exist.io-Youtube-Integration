@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Exist.io Youtube",
-    "version": "0.3",
+    "version": "0.1",
     "description": "Log time spent watching videos on YouTube to Exist.io",
     "permissions": [
         "storage",
@@ -31,8 +31,12 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": ["injected.js"],
-            "matches": ["*://*.youtube.com/*"]
+            "resources": [
+                "injected.js"
+            ],
+            "matches": [
+                "*://*.youtube.com/*"
+            ]
         }
     ],
     "browser_specific_settings": {
