@@ -10,13 +10,31 @@ const STATES = {
 };
 
 start_timestamp = null;
+let playerInitialized = false;
 
-var e_player = document.getElementById('movie_player');
-e_player.addEventListener('onStateChange', (state) => {
-    state_change_handler(state);
-});
-console.log('YouTube logger initialized!');
-console.log(e_player);
+function initializePlayer() {
+    if (playerInitialized) return;
+
+    var e_player = document.getElementById('movie_player');
+    if (!e_player) return;
+
+    e_player.addEventListener('onStateChange', (state) => {
+        state_change_handler(state);
+    });
+    playerInitialized = true;
+    console.log('YouTube logger initialized!');
+    console.log(e_player);
+}
+
+// Try immediately in case player already exists
+initializePlayer();
+
+// Listen for YouTube's navigation events (works for SPA navigation)
+window.addEventListener('yt-navigate-finish', initializePlayer);
+
+// Also listen for page load completion
+document.addEventListener('DOMContentLoaded', initializePlayer);
+window.addEventListener('load', initializePlayer);
 
 function state_change_handler(state) {
     console.log('State changed:', state);
@@ -27,7 +45,7 @@ function state_change_handler(state) {
         console.log('Video is not playing');
         if (start_timestamp) {
             end_timestamp = Date.now();
-            duration_minutes = (end_timestamp - start_timestamp) / 1000 / 60 + 1;
+            duration_minutes = (end_timestamp - start_timestamp) / 1000 / 60;
             console.log(`Watched for ${duration_minutes.toFixed(2)} minutes`);
             start_timestamp = null;
             log_watch_time(duration_minutes);
@@ -36,15 +54,22 @@ function state_change_handler(state) {
 }
 
 function log_watch_time(duration_minutes) {
-    url = "https://exist.io/api/2/attributes/increment/"
-    attributes = [{ "name": "youtube_mins", "date": new Date().toISOString().slice(0, 10), "value": duration_minutes }]
+    int_duration = Math.floor(duration_minutes);
+    if (int_duration <= 0) {
+        console.log("Duration too short to log.");
+        return;
+    }
 
-    fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_TOKEN}`
-        },
-        body: JSON.stringify({ attributes: attributes })
-    });
+    url = "https://exist.io/api/2/attributes/increment/"
+    attributes = [{ "name": "youtube_mins", "date": new Date().toISOString().slice(0, 10), "value": int_duration }]
+
+    console.log("Logging to Exist.io:", attributes);
+    // fetch(url, {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         "Authorization": `Bearer ${API_TOKEN}`
+    //     },
+    //     body: JSON.stringify({ attributes: attributes })
+    // });
 }

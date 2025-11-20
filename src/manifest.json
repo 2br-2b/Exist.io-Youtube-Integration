@@ -12,7 +12,8 @@
             ],
             "js": [
                 "log-youtube.js"
-            ]
+            ],
+            "world": "MAIN"
         }
     ],
     "description": "Log time spent watching videos on YouTube to Exist.io",
