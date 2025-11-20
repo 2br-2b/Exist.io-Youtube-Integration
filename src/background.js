@@ -2,6 +2,7 @@
 
 const EXIST_TOKEN_URL = 'https://exist.io/oauth2/access_token';
 const EXIST_ATTRIBUTES_URL = 'https://exist.io/api/2/attributes/';
+const EXIST_CREATE_URL = 'https://exist.io/api/2/attributes/create/';
 const EXIST_ACQUIRE_URL = 'https://exist.io/api/2/attributes/acquire/';
 const EXIST_INCREMENT_URL = 'https://exist.io/api/2/attributes/increment/';
 
@@ -23,6 +24,79 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         handleOAuthRedirect(tabId, changeInfo.url);
     }
 });
+
+// Listen for messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'LOG_WATCH_TIME') {
+        logWatchTime(message.duration).then(sendResponse);
+        return true; // Keep channel open for async response
+    }
+});
+
+async function logWatchTime(duration_minutes) {
+    var int_duration = Math.floor(duration_minutes);
+    if (int_duration <= 0) {
+        int_duration = 1;
+        // console.log("Exist.io: Ignoring sub-one minute duration");
+        // return { success: false, reason: 'duration too short' };
+    }
+
+    const data = await storage.get(['accessToken', 'attributeName']);
+    if (!data.accessToken) {
+        console.error("Exist.io: No access token");
+        return { success: false, reason: 'no token' };
+    }
+
+    const attributeName = data.attributeName || 'youtube_minutes';
+    const attributes = [{
+        name: attributeName,
+        date: new Date().toISOString().slice(0, 10),
+        value: int_duration
+    }];
+
+    console.log("Exist.io: Logging", int_duration, "minutes");
+
+    try {
+        const response = await fetch(EXIST_INCREMENT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${data.accessToken}`
+            },
+            body: JSON.stringify(attributes)
+        });
+
+        const result = await response.json();
+
+        if (response.status === 202) {
+            // Some attributes failed - check if it's our attribute
+            if (result.failed && result.failed.length > 0) {
+                const failed = result.failed.find(f => f.name === attributeName);
+                if (failed) {
+                    console.error("Exist.io: Attribute failed:", failed.error);
+                    // Try to re-setup the attribute
+                    console.log("Exist.io: Attempting to re-setup attribute...");
+                    await setupAttribute(data.accessToken);
+                    return { success: false, reason: 'attribute failed, re-setup attempted' };
+                }
+            }
+        }
+
+        if (response.ok || response.status === 202) {
+            if (result.success && result.success.length > 0) {
+                console.log("Exist.io: Successfully logged time, new total:", result.success[0].current);
+                return { success: true, current: result.success[0].current };
+            }
+        }
+
+        console.error("Exist.io: Failed to log watch time", response.status, result);
+        return { success: false, reason: 'api error' };
+
+    } catch (error) {
+        console.error("Exist.io: Error logging watch time", error);
+        return { success: false, reason: error.message };
+    }
+}
 
 async function handleOAuthRedirect(tabId, url) {
     try {
@@ -117,26 +191,51 @@ async function setupAttribute(token) {
         }
     }
 
-    // Acquire ownership of the attribute (creates it if it doesn't exist for manual attributes)
+    // Create the attribute if it doesn't exist
     if (!attributeExists) {
-        const acquireResponse = await fetch(EXIST_ACQUIRE_URL, {
+        console.log('Creating attribute:', ATTRIBUTE_CONFIG.label);
+        const createResponse = await fetch(EXIST_CREATE_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify([{ name: attributeName }])
+            body: JSON.stringify([ATTRIBUTE_CONFIG])
         });
 
-        if (acquireResponse.ok) {
-            const acquireData = await acquireResponse.json();
-            if (acquireData.success && acquireData.success.length > 0) {
-                console.log('Acquired ownership of:', attributeName);
-            } else if (acquireData.failed && acquireData.failed.length > 0) {
-                const error = acquireData.failed[0];
-                if (error.error_code !== 'already_owned') {
-                    console.warn('Failed to acquire attribute:', error.error);
-                }
+        if (createResponse.ok) {
+            const createData = await createResponse.json();
+            if (createData.success && createData.success.length > 0) {
+                attributeName = createData.success[0].name;
+                console.log('Created attribute:', attributeName);
+            } else if (createData.failed && createData.failed.length > 0) {
+                console.error('Failed to create attribute:', createData.failed[0].error);
+            }
+        } else {
+            console.error('Failed to create attribute:', await createResponse.text());
+        }
+    }
+
+    // Acquire ownership of the attribute
+    const acquireResponse = await fetch(EXIST_ACQUIRE_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify([{ name: attributeName }])
+    });
+
+    if (acquireResponse.ok) {
+        const acquireData = await acquireResponse.json();
+        if (acquireData.success && acquireData.success.length > 0) {
+            console.log('Acquired ownership of:', attributeName);
+        } else if (acquireData.failed && acquireData.failed.length > 0) {
+            const error = acquireData.failed[0];
+            if (error.error_code !== 'already_owned') {
+                console.warn('Failed to acquire attribute:', error.error);
+            } else {
+                console.log('Already own attribute:', attributeName);
             }
         }
     }

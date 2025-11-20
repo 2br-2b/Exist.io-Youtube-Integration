@@ -3,7 +3,7 @@ const EXIST_TOKEN_URL = 'https://exist.io/oauth2/access_token';
 const EXIST_ATTRIBUTES_URL = 'https://exist.io/api/2/attributes/';
 const EXIST_CREATE_URL = 'https://exist.io/api/2/attributes/create/';
 const EXIST_ACQUIRE_URL = 'https://exist.io/api/2/attributes/acquire/';
-const SCOPES = 'media_read';
+const SCOPES = 'media_write';
 
 const ATTRIBUTE_CONFIG = {
     label: 'YouTube Minutes',
