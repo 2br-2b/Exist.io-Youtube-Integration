@@ -1,8 +1,9 @@
-// Background script to handle OAuth redirects
+// Background script to handle OAuth redirects and API calls
 
 const EXIST_TOKEN_URL = 'https://exist.io/oauth2/access_token';
 const EXIST_ATTRIBUTES_URL = 'https://exist.io/api/2/attributes/';
 const EXIST_ACQUIRE_URL = 'https://exist.io/api/2/attributes/acquire/';
+const EXIST_INCREMENT_URL = 'https://exist.io/api/2/attributes/increment/';
 
 const ATTRIBUTE_CONFIG = {
     label: 'YouTube Minutes',
@@ -106,7 +107,9 @@ async function setupAttribute(token) {
     let attributeExists = false;
     if (attributesResponse.ok) {
         const attributes = await attributesResponse.json();
-        const existing = attributes.find(attr => attr.name === expectedName);
+        // API returns array of attributes
+        const attrArray = Array.isArray(attributes) ? attributes : [];
+        const existing = attrArray.find(attr => attr.name === expectedName);
         if (existing) {
             attributeExists = true;
             attributeName = existing.name;
