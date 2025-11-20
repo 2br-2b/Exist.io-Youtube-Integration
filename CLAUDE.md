@@ -103,7 +103,7 @@ const storage = {
 ### YouTube Player State Tracking
 
 The injected script listens for `onStateChange` events on the `movie_player` element:
-- State 1 (PLAYING): Record start timestamp
+- State 1 (PLAYING) or State 3 (BUFFERING): Record start timestamp
 - Any other state: Calculate duration, send to content script
 
 Also handles YouTube's SPA navigation via `yt-navigate-finish` event.

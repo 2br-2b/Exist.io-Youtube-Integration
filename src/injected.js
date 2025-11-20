@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', initializePlayer);
 window.addEventListener('load', initializePlayer);
 
 function state_change_handler(state) {
-    if (state === STATES.PLAYING) {
+    if (state === STATES.PLAYING || state === STATES.BUFFERING) {
         start_timestamp = Date.now();
     } else {
         if (start_timestamp) {
