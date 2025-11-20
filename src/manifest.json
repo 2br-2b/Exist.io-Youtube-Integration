@@ -1,0 +1,22 @@
+{
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "@youtube-exist-logger",
+            "strict_min_version": "42.0"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/watch*"
+            ],
+            "js": [
+                "log-youtube.js"
+            ]
+        }
+    ],
+    "description": "Log time spent watching videos on YouTube to Exist.io",
+    "manifest_version": 3,
+    "name": "Exist.io Youtube",
+    "version": "0.1"
+}
