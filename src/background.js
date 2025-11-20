@@ -36,9 +36,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function logWatchTime(duration_minutes, date) {
     var int_duration = Math.floor(duration_minutes);
     if (int_duration <= 0) {
-        int_duration = 1;
-        // console.log("Exist.io: Ignoring sub-one minute duration");
-        // return { success: false, reason: 'duration too short' };
+        console.log("Exist.io: Ignoring sub-one minute duration");
+        return { success: false, reason: 'duration too short' };
     }
 
     const data = await storage.get(['accessToken', 'attributeName']);
