@@ -1,9 +1,19 @@
 {
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "@youtube-exist-logger",
-            "strict_min_version": "42.0"
-        }
+    "manifest_version": 3,
+    "name": "Exist.io Youtube",
+    "version": "0.3",
+    "description": "Log time spent watching videos on YouTube to Exist.io",
+    "permissions": [
+        "storage",
+        "identity",
+        "tabs"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "options.html",
+        "default_title": "Exist.io YouTube Logger"
     },
     "content_scripts": [
         {
@@ -11,13 +21,15 @@
                 "*://*.youtube.com/watch*"
             ],
             "js": [
-                "log-youtube.js"
+                "content-script.js"
             ],
-            "world": "MAIN"
+            "run_at": "document_start"
         }
     ],
-    "description": "Log time spent watching videos on YouTube to Exist.io",
-    "manifest_version": 3,
-    "name": "Exist.io Youtube",
-    "version": "0.1"
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "@youtube-exist-logger",
+            "strict_min_version": "42.0"
+        }
+    }
 }

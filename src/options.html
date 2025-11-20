@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Exist.io YouTube Logger - Settings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            width: 380px;
+            min-height: 400px;
+            margin: 0;
+            padding: 15px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        .section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #444;
+            font-size: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+            font-size: 12px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background: #666;
+        }
+        button.secondary:hover {
+            background: #555;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .status.connected {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status.disconnected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        #message {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+            font-size: 11px;
+        }
+        #message.success {
+            display: block;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        #message.error {
+            display: block;
+            background: #ffebee;
+            color: #c62828;
+        }
+        .help-text {
+            font-size: 10px;
+            color: #666;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+        .setup-steps {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        .setup-steps ol {
+            margin: 8px 0 0 0;
+            padding-left: 18px;
+        }
+        .setup-steps li {
+            margin-bottom: 6px;
+        }
+        .setup-steps a {
+            color: #1976d2;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            word-break: break-all;
+        }
+        #redirectUri {
+            display: block;
+            margin-top: 4px;
+            font-size: 9px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Exist.io YouTube Logger</h1>
+
+    <div class="section">
+        <h2>Connection Status</h2>
+        <div id="status" class="status disconnected">
+            Checking...
+        </div>
+        <button id="disconnect" class="danger" style="display: none;">Disconnect</button>
+    </div>
+
+    <div class="section">
+        <h2>Setup</h2>
+        <div class="setup-steps">
+            <strong>First time setup:</strong>
+            <ol>
+                <li>Go to <a href="https://exist.io/account/apps/developer/" target="_blank">Exist.io Developer Apps</a></li>
+                <li>Click "Register a new application"</li>
+                <li>Set redirect URI to: <code id="redirectUri">Loading...</code></li>
+                <li>Copy your Client ID and Client Secret below</li>
+            </ol>
+        </div>
+
+        <label for="clientId">Client ID</label>
+        <input type="text" id="clientId" placeholder="Your Exist.io Client ID">
+
+        <label for="clientSecret">Client Secret</label>
+        <input type="password" id="clientSecret" placeholder="Your Exist.io Client Secret">
+        <p class="help-text">Stored locally on your device only.</p>
+
+        <button id="saveCredentials" class="secondary">Save Credentials</button>
+        <button id="authorize">Authorize with Exist.io</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>
