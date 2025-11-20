@@ -28,12 +28,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'LOG_WATCH_TIME') {
-        logWatchTime(message.duration).then(sendResponse);
+        logWatchTime(message.duration, message.date).then(sendResponse);
         return true; // Keep channel open for async response
     }
 });
 
-async function logWatchTime(duration_minutes) {
+async function logWatchTime(duration_minutes, date) {
     var int_duration = Math.floor(duration_minutes);
     if (int_duration <= 0) {
         int_duration = 1;
@@ -48,13 +48,15 @@ async function logWatchTime(duration_minutes) {
     }
 
     const attributeName = data.attributeName || 'youtube_minutes';
+    // Use provided date (for midnight-spanning sessions) or current date
+    const logDate = date || new Date().toISOString().slice(0, 10);
     const attributes = [{
         name: attributeName,
-        date: new Date().toISOString().slice(0, 10),
+        date: logDate,
         value: int_duration
     }];
 
-    console.log("Exist.io: Logging", int_duration, "minutes");
+    console.log("Exist.io: Logging", int_duration, "minutes for", logDate);
 
     try {
         const response = await fetch(EXIST_INCREMENT_URL, {

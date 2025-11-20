@@ -31,11 +31,13 @@ function handleMessage(event) {
     if (event.data.type !== 'EXIST_LOG_TIME') return;
 
     const duration_minutes = event.data.duration;
+    const date = event.data.date; // Optional: specific date for midnight-spanning sessions
 
     // Send to background script to avoid CORS issues
     chrome.runtime.sendMessage({
         type: 'LOG_WATCH_TIME',
-        duration: duration_minutes
+        duration: duration_minutes,
+        date: date
     }, (response) => {
         if (response && response.success) {
             console.log("Exist.io: Logged time successfully, total:", response.current);
